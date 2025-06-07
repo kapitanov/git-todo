@@ -1,0 +1,41 @@
+name: build
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: set up go 1.24
+        uses: actions/setup-go@v5
+        with:
+          go-version: "1.24"
+        id: go
+      - name: Setup Golang caches
+        uses: actions/cache@v4
+        with:
+          path: |
+            /root/.cache/go-build
+            /root/go/pkg/mod
+            /root/go/bin
+          key: ${{ runner.os }}-golang-${{ hashFiles('**/go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-golang-
+      - name: checkout
+        uses: actions/checkout@v4
+      - name: download dependencies
+        run: go mod download
+      - name: build
+        run: make build
+      - name: test
+        run: make test
+      - name: lint
+        run: make lint
+      - name: foobar
+        run: go env

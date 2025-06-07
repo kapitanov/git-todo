@@ -17,7 +17,7 @@ format:
 
 test:
 	@mkdir -p artifacts
-	go run gotest.tools/gotestsum@$(GOTESTSUM) --format=short-verbose --junitfile=artifacts/junit.xml -- -coverprofile=artifacts/coverage.out -covermode=atomic ./...
+	go run gotest.tools/gotestsum@$(GOTESTSUM) --junitfile=artifacts/junit.xml -- -coverprofile=artifacts/coverage.out -covermode=count ./...
 	go tool cover -html=artifacts/coverage.out -o artifacts/coverage.html
 	@go tool cover -func=./artifacts/coverage.out | grep 'total' | awk '{printf "%s\n", $$3}'
 

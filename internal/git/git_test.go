@@ -4,6 +4,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strings"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -116,19 +117,21 @@ func TestCurrentBranch_NonEmptyRepository(t *testing.T) {
 func gitInitialCommit(t *testing.T, dir, branch string) {
 	t.Helper()
 
-	{
-		cmd := exec.Command("git", "init", "--initial-branch="+branch)
-		cmd.Dir = dir
-		require.NoError(t, cmd.Run())
+	require.NoError(t, execCommand(t, dir, "git", "init", "--initial-branch="+branch))
+	require.NoError(t, execCommand(t, dir, "git", "config", "--local", "user.email", "test@test.local"))
+	require.NoError(t, execCommand(t, dir, "git", "config", "--local", "user.name", "Test User"))
+	require.NoError(t, execCommand(t, dir, "git", "commit", "--allow-empty", "-m", "Initial commit"))
 
-		t.Logf("Initialized git repository in %q (initial branch %q)", dir, branch)
+}
+
+func execCommand(t *testing.T, dir, program string, args ...string) error {
+	cmd := exec.Command(program, args...)
+	cmd.Dir = dir
+	t.Logf("(at %s) %s", cmd.Dir, cmd.String())
+	output, err := cmd.CombinedOutput()
+	for _, line := range strings.Split(string(output), "\n") {
+		t.Logf("< %s", line)
 	}
 
-	{
-		cmd := exec.Command("git", "commit", "--allow-empty", "-m", "Initial commit")
-		cmd.Dir = dir
-		require.NoError(t, cmd.Run())
-
-		t.Logf("Created an initial commit in git in %q (branch %q)", dir, branch)
-	}
+	return err
 }

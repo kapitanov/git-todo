@@ -22,7 +22,7 @@ type createModel struct {
 func newCreateModel(app *application.App) *createModel {
 	m := &createModel{
 		input: textinput.New(),
-		title: newTitleBar("Edit the title for an new TODO item"),
+		title: newTitleBar("Edit the title for a new TODO item"),
 		err:   newErrorBar(),
 		footer: newFooterBar(
 			footerBarItem{Key: "enter", Label: "save"},
