@@ -1,0 +1,9 @@
+[x] Basic CLI
+[x] Refactor
+[x] Automatable CLI (json output, tab-separated output, etc)
+[x] TUI
+[x] git hooks
+[ ] README
+[ ] Tests
+[ ] Documentation
+[ ] CI
