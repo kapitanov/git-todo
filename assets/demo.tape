@@ -1,4 +1,4 @@
-Output demo.webm
+Output demo.gif
 
 Set FontSize 16
 Set Width 1200

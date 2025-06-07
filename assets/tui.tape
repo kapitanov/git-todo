@@ -1,4 +1,4 @@
-Output tui.webm
+Output tui.gif
 
 Set FontSize 16
 Set Width 1200

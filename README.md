@@ -12,7 +12,7 @@ Do you want to have a simple way to manage them without using any external servi
 
 If so, `git-todo` is for you!
 
-![TUI](./assets/demo.webm)
+![TUI](./assets/demo.gif)
 
 ## Features
 
@@ -54,7 +54,7 @@ The TUI allows you to navigate through the list of TODO items, toggle their comp
 git todo # open a TUI
 ```
 
-![TUI](./assets/tui.png)
+![TUI](./assets/tui.gif)
 
 ## Command Line Interface
 
