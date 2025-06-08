@@ -9,8 +9,13 @@ import (
 	"github.com/kapitanov/git-todo/internal/commands"
 )
 
+var (
+	version = "develop"
+)
+
 func main() {
 	cmd := commands.New()
+	cmd.Version = version
 
 	err := withSigterm(func(ctx context.Context) error {
 		return cmd.ExecuteContext(ctx)

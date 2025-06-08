@@ -24,3 +24,6 @@ test:
 lint:
 	@mkdir -p artifacts
 	go run github.com/golangci/golangci-lint/v2/cmd/golangci-lint@$(GOLANGCI_LINT) run --output.code-climate.path ./artifacts/lint.json --output.tab.path stdout
+
+release:
+	goreleaser release --snapshot --clean
