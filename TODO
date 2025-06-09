@@ -3,7 +3,8 @@
 [x] Automatable CLI (json output, tab-separated output, etc)
 [x] TUI
 [x] git hooks
-[ ] README
-[ ] Tests
+[x] README
+[x] Tests
 [ ] Documentation
-[ ] CI
+[ ] Website
+[x] CI

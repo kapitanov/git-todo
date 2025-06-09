@@ -5,12 +5,24 @@ GOLANGCI_LINT := v2.1.6
 GO_FILES      := $(shell find . -type f -name '*.go' -not -path './artifacts/*' -not -path "./vendor/*")
 LOCAL_PACKAGE := $(shell go list -m | head -n 1)
 
+.PHONY: all build install uninstall format test lint release
+all: build test lint
+
 build:
 	@mkdir -p artifacts
 	go build -o artifacts/git-todo .
 
 install:
 	go install -v
+
+uninstall:
+	@LOCAL_BINARY="$$(go env GOPATH)/bin/git-todo"; \
+	if [ -f "$$LOCAL_BINARY" ]; then \
+		rm -f "$$LOCAL_BINARY"; \
+		echo "Uninstalled $$LOCAL_BINARY"; \
+	else \
+		echo "No binary found at $$LOCAL_BINARY"; \
+	fi
 
 format:
 	go run golang.org/x/tools/cmd/goimports@$(GOIMPORTS) --local $(LOCAL_PACKAGE) -w -format-only $(GO_FILES)

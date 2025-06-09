@@ -5,12 +5,17 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
   goreleaser:
     runs-on: ubuntu-latest
     steps:
       - name: check out code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
       - name: set up go
         uses: actions/setup-go@v5
         with:
@@ -28,6 +33,7 @@ jobs:
       - name: run goreleaser
         uses: goreleaser/goreleaser-action@v6
         with:
+          distribution: goreleaser
           version: latest
           args: release --clean
         env:
