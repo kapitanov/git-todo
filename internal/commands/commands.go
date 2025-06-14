@@ -1,11 +1,14 @@
 package commands
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"io"
-	"runtime/debug"
+	"os"
 	"strconv"
 
+	"github.com/kapitanov/git-todo/internal/git"
 	"github.com/spf13/cobra"
 
 	"github.com/kapitanov/git-todo/internal/application"
@@ -45,24 +48,23 @@ Quickstart:
   git-todo clear                                        - remove all TODO items
 `,
 		SilenceUsage:  true,
-		Version:       getAppVersion(),
 		SilenceErrors: true,
 		CompletionOptions: cobra.CompletionOptions{
 			HiddenDefaultCmd: true,
 		},
 	}
 
-	var verbose, quiet bool
-	cmd.PersistentFlags().BoolVarP(&verbose, "verbose", "v", false, "enable verbose output")
-	cmd.PersistentFlags().BoolVarP(&quiet, "quiet", "q", false, "suppress all unnecessary output")
+	commandCtx := &commandContext{}
+	cmd.PersistentFlags().BoolVarP(&commandCtx.IsVerbose, "verbose", "v", false, "enable verbose output")
+	cmd.PersistentFlags().BoolVarP(&commandCtx.IsQuiet, "quiet", "q", false, "suppress all unnecessary output")
 
 	cmd.PersistentPreRunE = func(cmd *cobra.Command, args []string) error {
-		if quiet {
-			verbose = false
+		if commandCtx.IsQuiet {
+			commandCtx.IsVerbose = false
 			cmd.SetErr(io.Discard)
 		}
 
-		logutil.ConfigureLogger(verbose)
+		logutil.ConfigureLogger(commandCtx.IsVerbose)
 		return nil
 	}
 
@@ -74,33 +76,24 @@ Quickstart:
 
 		err = tui.Run(cmd.Context(), app)
 		if err != nil {
-			return err
+			return commandCtx.HandleError(err)
 		}
 		return nil
 	}
 
-	cmd.AddCommand(List())
-	cmd.AddCommand(Add())
-	cmd.AddCommand(Edit())
-	cmd.AddCommand(Check())
-	cmd.AddCommand(Uncheck())
-	cmd.AddCommand(Remove())
-	cmd.AddCommand(Clear())
-	cmd.AddCommand(Path())
-	cmd.AddCommand(Init())
-	cmd.AddCommand(Deinit())
-	cmd.AddCommand(GitHooks())
+	cmd.AddCommand(listCommand(commandCtx))
+	cmd.AddCommand(addCommand(commandCtx))
+	cmd.AddCommand(editCommand(commandCtx))
+	cmd.AddCommand(checkCommand(commandCtx))
+	cmd.AddCommand(uncheckCommand(commandCtx))
+	cmd.AddCommand(removeCommand(commandCtx))
+	cmd.AddCommand(clearCommand(commandCtx))
+	cmd.AddCommand(pathCommand(commandCtx))
+	cmd.AddCommand(initCommand(commandCtx))
+	cmd.AddCommand(deinitCommand(commandCtx))
+	cmd.AddCommand(gitHooksCommand(commandCtx))
 
 	return cmd
-}
-
-func getAppVersion() string {
-	info, ok := debug.ReadBuildInfo()
-	if !ok {
-		return "unknown"
-	}
-
-	return info.Main.Version
 }
 
 func selectItemsByIndex(app *application.App, args []string) (items []*application.Item, err error) {
@@ -112,10 +105,77 @@ func selectItemsByIndex(app *application.App, args []string) (items []*applicati
 
 		item := app.Item(index)
 		if item == nil {
-			return nil, fmt.Errorf("item #%d doesn't exist", index)
+			return nil, ExitError{
+				ExitCode: ExitCodeItemDoesntExist,
+				Message:  fmt.Sprintf("item %d doesn't exist", index),
+			}
 		}
 
 		items = append(items, item)
 	}
 	return
+}
+
+type ExitCode int
+
+const (
+	ExitCodeNotGitRepository  ExitCode = 128
+	ExitCodeItemDoesntExist   ExitCode = 404
+	ExitCodeItemAlreadyExists ExitCode = 409
+	ExitCodeOperationCanceled ExitCode = 499
+	ExitCodeInternalError     ExitCode = 500
+)
+
+type ExitError struct {
+	ExitCode ExitCode
+	Message  string
+}
+
+func (e ExitError) Error() string {
+	if e.Message != "" {
+		return e.Message
+	}
+
+	return fmt.Sprintf("exit code %d", e.ExitCode)
+}
+
+type commandContext struct {
+	IsVerbose bool
+	IsQuiet   bool
+}
+
+func (c *commandContext) IsRunningInInteractiveMode() bool { return !c.IsQuiet }
+
+func (c *commandContext) HumanReadablePrintf(format string, args ...any) {
+	if !c.IsRunningInInteractiveMode() {
+		return
+	}
+
+	_, _ = fmt.Fprintf(os.Stdout, format, args...)
+}
+
+func (c *commandContext) MachineReadablePrintf(format string, args ...any) {
+	if c.IsRunningInInteractiveMode() {
+		return
+	}
+
+	_, _ = fmt.Fprintf(os.Stdout, format, args...)
+}
+
+func (c *commandContext) HandleError(err error) error {
+	if errors.Is(err, git.ErrNoGitRepository) {
+		_, _ = fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+		return ExitError{ExitCode: ExitCodeNotGitRepository}
+	}
+
+	if errors.Is(err, application.ErrItemAlreadyExists) {
+		_, _ = fmt.Fprintf(os.Stderr, "%s\n", err.Error())
+		return ExitError{ExitCode: ExitCodeItemAlreadyExists}
+	}
+
+	if errors.Is(err, context.Canceled) {
+		c.HumanReadablePrintf("%s\n", "Cancelled by user")
+		return ExitError{ExitCode: ExitCodeOperationCanceled}
+	}
+	return err
 }

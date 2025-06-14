@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -13,7 +14,7 @@ import (
 	"github.com/kapitanov/git-todo/internal/commands/cui"
 )
 
-func List() *cobra.Command {
+func listCommand(c *commandContext) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "ls",
 		Short: "list TODO items",
@@ -26,9 +27,9 @@ but you can customize the output using various flags, as shown in the examples b
 		Example: `  git todo ls              - lists all TODO items in the current repository
   git todo ls --completed  - lists only completed TODO items
   git todo ls --incomplete - lists only incomplete TODO items
+  git todo ls -f "docs?"   - lists all TODO items that match the pattern "docs?"
   git todo ls --json       - lists TODO items in JSON format
-  git todo ls --plain      - lists TODO items in a plain, script-friendly (space-separated) format
-`,
+  git todo ls --plain      - lists TODO items in a plain, script-friendly (space-separated) format`,
 		Args: cobra.NoArgs,
 	}
 
@@ -38,24 +39,21 @@ but you can customize the output using various flags, as shown in the examples b
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		app, err := application.New()
 		if err != nil {
-			return err
+			return c.HandleError(err)
 		}
 
 		items, err := filter(app)
 		if err != nil {
-			return err
+			return c.HandleError(err)
 		}
 
-		out, err := render(items)
+		out, err := render(items, c)
 		if err != nil {
-			return err
+			return c.HandleError(err)
 		}
 
 		_, err = os.Stdout.Write([]byte(out))
-		if err != nil {
-			return err
-		}
-		return nil
+		return err
 	}
 
 	return cmd
@@ -64,9 +62,11 @@ but you can customize the output using various flags, as shown in the examples b
 func configureItemsFilter(cmd *cobra.Command) func(app *application.App) ([]*application.Item, error) {
 	var (
 		completedOnly, incompleteOnly bool
+		regexpFilter                  string
 	)
 	cmd.Flags().BoolVarP(&completedOnly, "completed", "c", false, "show only completed TODO items")
 	cmd.Flags().BoolVarP(&incompleteOnly, "incomplete", "i", false, "show only incomplete TODO items")
+	cmd.Flags().StringVarP(&regexpFilter, "filter", "f", "", "filter items by regexp")
 
 	return func(app *application.App) ([]*application.Item, error) {
 		if !onlyOneAllowed(completedOnly, incompleteOnly) {
@@ -77,11 +77,18 @@ func configureItemsFilter(cmd *cobra.Command) func(app *application.App) ([]*app
 			return app.Items(), nil
 		}
 
+		var re *regexp.Regexp
+		if regexpFilter != "" {
+			var err error
+			re, err = regexp.Compile(regexpFilter)
+			if err != nil {
+				return nil, fmt.Errorf("invalid regexp filter %q: %w", regexpFilter, err)
+			}
+		}
+
 		var items []*application.Item
 		for _, item := range app.Items() {
-			if completedOnly && item.IsCompleted() {
-				items = append(items, item)
-			} else if incompleteOnly && !item.IsCompleted() {
+			if isItemVisible(item, completedOnly, incompleteOnly, re) {
 				items = append(items, item)
 			}
 		}
@@ -90,14 +97,30 @@ func configureItemsFilter(cmd *cobra.Command) func(app *application.App) ([]*app
 	}
 }
 
-func configureItemsRenderer(cmd *cobra.Command) func(items []*application.Item) (string, error) {
+func isItemVisible(item *application.Item, completedOnly, incompleteOnly bool, re *regexp.Regexp) bool {
+	if completedOnly && !item.IsCompleted() {
+		return false
+	}
+
+	if incompleteOnly && item.IsCompleted() {
+		return false
+	}
+
+	if re != nil && !re.MatchString(item.Title()) {
+		return false
+	}
+
+	return true
+}
+
+func configureItemsRenderer(cmd *cobra.Command) func(items []*application.Item, c *commandContext) (string, error) {
 	var (
 		printJSON, printPlain bool
 	)
 	cmd.Flags().BoolVarP(&printJSON, "json", "j", false, "print TODO items in JSON format")
 	cmd.Flags().BoolVarP(&printPlain, "plain", "p", false, "print TODO items in the plain format")
 
-	return func(items []*application.Item) (string, error) {
+	return func(items []*application.Item, c *commandContext) (string, error) {
 		if !onlyOneAllowed(printJSON, printPlain) {
 			return "", errors.New("cannot use \"--json\" and \"--plain\" flags at the same time")
 		}
@@ -107,6 +130,10 @@ func configureItemsRenderer(cmd *cobra.Command) func(items []*application.Item) 
 		}
 
 		if printPlain {
+			return renderPlainList(items), nil
+		}
+
+		if !c.IsRunningInInteractiveMode() {
 			return renderPlainList(items), nil
 		}
 
@@ -149,9 +176,9 @@ func renderPlainList(items []*application.Item) string {
 
 	var sb strings.Builder
 	for _, item := range items {
-		checkBox := "X"
+		checkBox := "TODO"
 		if item.IsCompleted() {
-			checkBox = "_"
+			checkBox = "DONE"
 		}
 
 		sb.WriteString(fmt.Sprintf("%d %s %s\n", item.ID(), checkBox, item.Title()))

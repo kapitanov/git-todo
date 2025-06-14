@@ -42,7 +42,7 @@ func Load(path string) (*Model, error) {
 		return nil, fmt.Errorf("failed to parse file %q: %w", path, err)
 	}
 
-	log.Error().Err(err).Str("path", path).Msg("failed to read model file")
+	log.Debug().Err(err).Str("path", path).Msg("loaded model file")
 	return m, nil
 }
 

@@ -7,7 +7,7 @@ import (
 	"github.com/kapitanov/git-todo/internal/installer"
 )
 
-func Init() *cobra.Command {
+func initCommand(c *commandContext) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "init",
 		Short: "install git todo hooks",
@@ -36,15 +36,15 @@ This command sets up the necessary hooks to integrate git todo functionality int
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		app, err := application.New()
 		if err != nil {
-			return err
+			return c.HandleError(err)
 		}
 
 		err = installer.Install(app.RepositoryRoot(), force)
 		if err != nil {
-			return err
+			return c.HandleError(err)
 		}
 
-		cmd.PrintErr("Git hooks installed successfully.\n")
+		c.HumanReadablePrintf("Git hooks installed successfully.\n")
 		return nil
 	}
 

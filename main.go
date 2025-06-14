@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"errors"
+	"fmt"
 	"os"
 	"os/signal"
 	"syscall"
@@ -21,8 +23,13 @@ func main() {
 		return cmd.ExecuteContext(ctx)
 	})
 	if err != nil {
-		cmd.PrintErrf("%s\n", err.Error())
-		os.Exit(-1)
+		var exitErr commands.ExitError
+		if errors.As(err, &exitErr) {
+			os.Exit(int(exitErr.ExitCode))
+		} else {
+			_, _ = fmt.Fprintf(os.Stderr, "%s\n", err)
+			os.Exit(int(commands.ExitCodeInternalError))
+		}
 	}
 }
 

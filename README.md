@@ -128,7 +128,7 @@ git todo check 1                            # check the TODO item with index 1
 git todo uncheck 2                          # uncheck the TODO item with index 2
 git todo edit 3 --title "Updated TODO Item" # edit the TODO item with index 3
 git todo edit 3                             # edit the TODO item with index 3 - opens an editor
-git todo remove 4                           # remove the TODO item with index 4
+git todo rm 4                               # remove the TODO item with index 4
 git todo clear                              # clear all TODO items
 ```
 

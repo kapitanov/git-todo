@@ -2,6 +2,7 @@ package application
 
 import (
 	"errors"
+	"fmt"
 	"slices"
 	"strings"
 
@@ -13,6 +14,10 @@ import (
 
 const (
 	MaxTitleLength = 256
+)
+
+var (
+	ErrItemAlreadyExists = errors.New("item already exists")
 )
 
 type App struct {
@@ -80,7 +85,7 @@ func (app *App) NewItem(title string) (*Item, error) {
 
 	for _, item := range app.model.Items {
 		if item.Title == title {
-			return nil, errors.New("item already exists")
+			return nil, fmt.Errorf("unable to create an item with title %q: %w", title, ErrItemAlreadyExists)
 		}
 	}
 
@@ -96,6 +101,16 @@ func (app *App) NewItem(title string) (*Item, error) {
 
 	items := app.Items()
 	return items[len(items)-1], nil
+}
+
+func (app *App) FindItem(title string) (*Item, error) {
+	for _, item := range app.Items() {
+		if item.Title() == title {
+			return item, nil
+		}
+	}
+
+	return nil, fmt.Errorf("item %q not found", title)
 }
 
 func (app *App) Clear() error {
@@ -127,6 +142,8 @@ func (item *Item) SetTitle(val string) error {
 	if err != nil {
 		return err
 	}
+	// TODO check for conficts
+	// fmt.Errorf("item with title %s already exists: %w", title, ErrItemAlreadyExists)
 
 	item.model.Title = val
 	return item.app.save()

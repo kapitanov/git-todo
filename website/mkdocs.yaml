@@ -1,0 +1,127 @@
+site_name: git-todo
+site_url: https://kapitanov.github.io/git-todo/
+site_author: Albert Kapitanov
+site_description: >-
+  git-todo is a local-only list of TODO items for your git repositories.
+site_dir: ../artifacts/website
+
+repo_name: kapitanov/git-todo
+repo_url: https://github.com/kapitanov/git-todo
+copyright: "(c) 2025 Albert Kapitanov"
+
+theme:
+  name: material
+  favicon: favicon.png
+  font:
+    text: Roboto
+    code: Roboto Mono
+  language: en
+  palette:
+      # scheme: default
+      primary: custom
+      accent: '#8DDBE0'
+  logo: assets/favicon.png
+  favicon: assets/favicon.png
+  features:
+    - navigation.instant
+    - navigation.tabs
+    # - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.expand
+    - navigation.indexes
+    - toc.follow
+    - toc.integrate
+    - navigation.top
+    - content.code.annotate
+    - content.code.select
+    - content.code.copy
+
+plugins:
+  - search:
+      lang: en
+  - minify:
+      minify_html: true
+  - social
+
+extra:
+  generator: true
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/kapitanov
+  analytics:
+    provider: google
+    property: G-XXXXXXXXXX # TODO Replace with actual Google Analytics property ID
+  consent:
+    title: Cookie consent
+    description: >- 
+      We use cookies to recognize your repeated visits and preferences, as well
+      as to measure the effectiveness of our documentation and whether users
+      find what they're searching for. With your consent, you're helping us to
+      make our documentation better
+
+extra_css:
+  - stylesheets/extra.css
+
+markdown_extensions:
+  - smarty
+  - sane_lists
+  - abbr
+  - admonition
+  - attr_list
+  - def_list
+  - footnotes
+  - meta
+  - md_in_html
+  - toc:
+      permalink: true
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.betterem:
+      smart_enable: all
+  - pymdownx.caret
+  - pymdownx.details
+  - pymdownx.highlight:
+      anchor_linenums: true
+      use_pygments: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.smartsymbols
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.tilde
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+nav:
+  - Home: index.md
+  - Documentation:
+     - "":
+       - Quickstart Guide: docs/quickstart.md
+       - Installation: docs/install.md
+       - Text User Interface: docs/tui.md 
+       - Command Line Interface:
+         - docs/cli/index.md
+         - docs/cli/add.md
+         - docs/cli/check.md
+         - docs/cli/clear.md
+         - docs/cli/deinit.md
+         - docs/cli/edit.md
+         - docs/cli/init.md
+         - docs/cli/ls.md
+         - docs/cli/rm.md
+         - docs/cli/uncheck.md
+       - Git Hooks: docs/git-hooks.md
+       - Interaction with IDEs: docs/ide.md
+       - Storage format: ./docs/storage.md
+       - License: docs/license.md

@@ -1,13 +1,14 @@
 package commands
 
 import (
-	"github.com/spf13/cobra"
+	"errors"
 
 	"github.com/kapitanov/git-todo/internal/application"
 	"github.com/kapitanov/git-todo/internal/commands/cui"
+	"github.com/spf13/cobra"
 )
 
-func Clear() *cobra.Command {
+func clearCommand(c *commandContext) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "clear",
 		Short: "remove all TODO items",
@@ -26,26 +27,29 @@ This action cannot be undone!`,
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		app, err := application.New()
 		if err != nil {
-			return err
+			return c.HandleError(err)
 		}
 
 		if !force {
-			confirmed, err := cui.Confirm("Are you sure you want to remove all TODO items")
-			if err != nil {
-				return err
-			}
-			if !confirmed {
-				cmd.PrintErr("Cancelled by user\n")
-				return nil
+			if c.IsRunningInInteractiveMode() {
+				confirmed, err := cui.Confirm("Are you sure you want to remove all TODO items")
+				if err != nil {
+					return c.HandleError(err)
+				}
+				if !confirmed {
+					return nil
+				}
+			} else {
+				return errors.New("operation is not confirmed")
 			}
 		}
 
 		err = app.Clear()
 		if err != nil {
-			return err
+			return c.HandleError(err)
 		}
 
-		cmd.PrintErr("All TODO items have been deleted\n")
+		c.HumanReadablePrintf("All TODO items have been deleted\n")
 		return nil
 	}
 

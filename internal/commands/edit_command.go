@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -9,7 +10,7 @@ import (
 	"github.com/kapitanov/git-todo/internal/commands/cui"
 )
 
-func Edit() *cobra.Command {
+func editCommand(c *commandContext) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "edit",
 		Short: "edit a TODO item",
@@ -31,23 +32,28 @@ You can override this by setting the EDITOR environment variable before running 
 	}
 
 	var title string
+
 	cmd.Flags().StringVarP(&title, "title", "t", "", "new title of the TODO item")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		app, err := application.New()
 		if err != nil {
-			return err
+			return c.HandleError(err)
 		}
 
 		items, err := selectItemsByIndex(app, []string{args[0]})
 		if err != nil {
-			return err
+			return c.HandleError(err)
 		}
 
 		item := items[0]
 
 		if title == "" {
-			hint := fmt.Sprintf(""+"Type the new title of TODO item #%d\n Old title: %s\n", item.ID(), item.Title())
+			if !c.IsRunningInInteractiveMode() {
+				return errors.New("no title provided")
+			}
+
+			hint := fmt.Sprintf(""+"Type the new title of TODO item %d\n Old title: %s\n", item.ID(), item.Title())
 			title, err = cui.Edit(item.Title(), hint)
 			if err != nil {
 				return err
@@ -58,13 +64,18 @@ You can override this by setting the EDITOR environment variable before running 
 			return nil
 		}
 
-		orignalTitle := item.Title()
+		originalTitle := item.Title()
 		err = item.SetTitle(title)
 		if err != nil {
-			return err
+			return c.HandleError(err)
 		}
 
-		cmd.PrintErrf("TODO item #%d has been renamed:\n  was: %q\n  became: %q\n", item.ID(), orignalTitle, title)
+		c.MachineReadablePrintf("%d\n", item.ID())
+		if originalTitle != title {
+			c.HumanReadablePrintf("TODO item %d has been renamed:\n  old: %q\n  new: %q\n", item.ID(), originalTitle, title)
+		} else {
+			c.HumanReadablePrintf("TODO item %d has not been renamed: the new title is the same as the old one\n", item.ID())
+		}
 		return nil
 	}
 

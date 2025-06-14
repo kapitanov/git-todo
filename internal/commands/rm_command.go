@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/spf13/cobra"
@@ -9,7 +10,7 @@ import (
 	"github.com/kapitanov/git-todo/internal/commands/cui"
 )
 
-func Remove() *cobra.Command {
+func removeCommand(c *commandContext) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "rm",
 		Short: "remove a TODO item",
@@ -31,34 +32,39 @@ If you want to skip the confirmation, use the --force flag.
 	cmd.Flags().BoolVarP(&force, "force", "f", false, "force remove the TODO item without confirmation")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
+		if !force && !c.IsRunningInInteractiveMode() {
+			return errors.New("this command requires either an interactive confirmation prompt or a \"--force\" flag")
+		}
+
 		app, err := application.New()
 		if err != nil {
-			return err
+			return c.HandleError(err)
 		}
 
 		items, err := selectItemsByIndex(app, args)
 		if err != nil {
-			return err
+			return c.HandleError(err)
 		}
 
 		for _, item := range items {
 			if !force {
 				confirmed, err := cui.Confirm(fmt.Sprintf("Are you sure you want to remove TODO item #%d %q", item.ID(), item.Title()))
 				if err != nil {
-					return err
+					return c.HandleError(err)
 				}
 				if !confirmed {
-					cmd.PrintErrf("Canceled removal of TODO item #%d %q\n", item.ID(), item.Title())
+					c.HumanReadablePrintf("Canceled removal of TODO item %d %q\n", item.ID(), item.Title())
 					continue
 				}
 			}
 
 			err = item.Delete()
 			if err != nil {
-				return err
+				return c.HandleError(err)
 			}
 
-			cmd.PrintErrf("TODO item #%d has been removed (%s)\n", item.ID(), item.Title())
+			c.HumanReadablePrintf("TODO item %d has been removed (%s)\n", item.ID(), item.Title())
+			c.MachineReadablePrintf("%d\n", item.ID())
 		}
 		return nil
 	}

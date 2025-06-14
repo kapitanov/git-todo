@@ -1,6 +1,7 @@
 package commands
 
 import (
+	"errors"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -9,7 +10,7 @@ import (
 	"github.com/kapitanov/git-todo/internal/commands/cui"
 )
 
-func Add() *cobra.Command {
+func addCommand(c *commandContext) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "add [TITLE]...",
 		Short: "add a new TODO item",
@@ -23,22 +24,31 @@ You can override this by setting the EDITOR environment variable before running 
 		Example: `  git todo add "Write some code"        - adds a new incomplete TODO item with the title "Write some code"
   git todo add Write some tests as well - adds a new incomplete TODO item with the title "Write some tests as well"
   git todo add                          - opens an interactive editor to type the title of the new TODO item
-  EDITOR=nano git todo add              - same as above, but uses nano as the editor`,
+  EDITOR=nano git todo add              - same as above, but uses nano as the editor
+  git todo add -u "Write some code"     - adds a new incomplete TODO item with the title "Write some code",
+                                          or returns an existing item in case of conflict`,
 		Args: cobra.ArbitraryArgs,
 	}
+
+	var skipExisting bool
+	cmd.Flags().BoolVarP(&skipExisting, "unless-exists", "u", false, "skip adding the item if it already exists in the list")
 
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		app, err := application.New()
 		if err != nil {
-			return err
+			return c.HandleError(err)
 		}
 
 		title := strings.Join(args, " ")
 
 		if title == "" {
-			title, err = cui.Edit("", "Type the title of the new TODO item")
+			if !c.IsRunningInInteractiveMode() {
+				return errors.New("no title provided")
+			}
+
+			title, err = cui.Edit("", "Type the title of a new TODO item")
 			if err != nil {
-				return err
+				return c.HandleError(err)
 			}
 
 			if title == "" {
@@ -46,12 +56,27 @@ You can override this by setting the EDITOR environment variable before running 
 			}
 		}
 
-		_, err = app.NewItem(title)
+		newItemAdded := true
+		item, err := app.NewItem(title)
 		if err != nil {
-			return err
+			if skipExisting && errors.Is(err, application.ErrItemAlreadyExists) {
+				item, err = app.FindItem(title)
+				if err != nil {
+					return c.HandleError(err)
+				}
+
+				newItemAdded = false
+			} else {
+				return c.HandleError(err)
+			}
 		}
 
-		cmd.PrintErrf("Added new TODO item: %q\n", title)
+		c.MachineReadablePrintf("%d\n", item.ID())
+		if newItemAdded {
+			c.HumanReadablePrintf("Added a new TODO item: %d %q\n", item.ID(), item.Title())
+		} else {
+			c.HumanReadablePrintf("The TODO item already exists: %d %q\n", item.ID(), item.Title())
+		}
 		return nil
 	}
 

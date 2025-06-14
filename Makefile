@@ -5,7 +5,7 @@ GOLANGCI_LINT := v2.1.6
 GO_FILES      := $(shell find . -type f -name '*.go' -not -path './artifacts/*' -not -path "./vendor/*")
 LOCAL_PACKAGE := $(shell go list -m | head -n 1)
 
-.PHONY: all build install uninstall format test lint release
+.PHONY: all build install uninstall format test lint release website
 all: build test lint
 
 build:
@@ -39,3 +39,6 @@ lint:
 
 release:
 	goreleaser release --snapshot --clean
+
+website:
+	docker run --rm -t -v "$${PWD}:/mnt" -w /mnt/website squidfunk/mkdocs-material:latest -- build

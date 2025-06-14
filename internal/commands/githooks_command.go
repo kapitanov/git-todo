@@ -11,19 +11,19 @@ import (
 	"github.com/kapitanov/git-todo/internal/git"
 )
 
-func GitHooks() *cobra.Command {
+func gitHooksCommand(c *commandContext) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:    "githooks",
 		Hidden: true,
 	}
 
-	cmd.AddCommand(preCommitGitHook())
-	cmd.AddCommand(prePushGitHook())
+	cmd.AddCommand(preCommitGitHook(c))
+	cmd.AddCommand(prePushGitHook(c))
 
 	return cmd
 }
 
-func preCommitGitHook() *cobra.Command {
+func preCommitGitHook(c *commandContext) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:    "pre-commit",
 		Hidden: true,
@@ -32,7 +32,7 @@ func preCommitGitHook() *cobra.Command {
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		app, err := application.New()
 		if err != nil {
-			return err
+			return c.HandleError(err)
 		}
 
 		items := app.IncompleteItems()
@@ -42,7 +42,7 @@ func preCommitGitHook() *cobra.Command {
 
 		branch, err := git.CurrentBranch()
 		if err != nil {
-			return err
+			return c.HandleError(err)
 		}
 		if branch != git.Master && branch != git.Main {
 			return nil
@@ -54,7 +54,7 @@ func preCommitGitHook() *cobra.Command {
 		confirmMessage := fmt.Sprintf("Are you sure you want to commit these changes to the %q branch", branch)
 		confirmed, err := cui.Confirm(confirmMessage)
 		if err != nil {
-			return err
+			return c.HandleError(err)
 		}
 		if !confirmed {
 			return errors.New("commit aborted due to incomplete TODO items")
@@ -65,7 +65,7 @@ func preCommitGitHook() *cobra.Command {
 	return cmd
 }
 
-func prePushGitHook() *cobra.Command {
+func prePushGitHook(c *commandContext) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:    "pre-push",
 		Hidden: true,
@@ -74,7 +74,7 @@ func prePushGitHook() *cobra.Command {
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		app, err := application.New()
 		if err != nil {
-			return err
+			return c.HandleError(err)
 		}
 
 		items := app.IncompleteItems()
@@ -88,7 +88,7 @@ func prePushGitHook() *cobra.Command {
 		confirmMessage := "Are you sure you want to push these changes"
 		confirmed, err := cui.Confirm(confirmMessage)
 		if err != nil {
-			return err
+			return c.HandleError(err)
 		}
 		if !confirmed {
 			return errors.New("push aborted due to incomplete TODO items")

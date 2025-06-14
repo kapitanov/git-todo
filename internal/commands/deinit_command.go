@@ -7,7 +7,7 @@ import (
 	"github.com/kapitanov/git-todo/internal/installer"
 )
 
-func Deinit() *cobra.Command {
+func deinitCommand(c *commandContext) *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "deinit",
 		Short: "uninstall git todo hooks",
@@ -20,15 +20,15 @@ This command removes the git todo hooks that were installed in the current Git r
 	cmd.RunE = func(cmd *cobra.Command, args []string) error {
 		app, err := application.New()
 		if err != nil {
-			return err
+			return c.HandleError(err)
 		}
 
 		err = installer.Uninstall(app.RepositoryRoot())
 		if err != nil {
-			return err
+			return c.HandleError(err)
 		}
 
-		cmd.PrintErr("Git hooks uninstalled successfully.\n")
+		c.HumanReadablePrintf("Git hooks uninstalled successfully.\n")
 		return nil
 	}
 
