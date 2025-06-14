@@ -2,6 +2,7 @@ MKDOCS   := squidfunk/mkdocs-material:9.6
 ROOT_DIR := $(shell dirname $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))))
 
 build: assets
+	find $(ROOT_DIR)/website/.cache/plugin/social/ -maxdepth 1 -type f | xargs rm
 	docker run --rm -t -v "$(ROOT_DIR):/mnt" -w /mnt/website $(MKDOCS) -- build
 
 watch: assets

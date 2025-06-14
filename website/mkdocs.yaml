@@ -39,7 +39,14 @@ plugins:
       lang: en
   - minify:
       minify_html: true
-  - social
+  - social:
+      cards: true
+      cards_layout_options:
+        title: git-todo
+        logo: docs/assets/logo.jpg
+        description: A local-only list of TODO items for your git repositories
+        color: '#000000'
+        background_color: '#8DDBE0'
 
 extra:
   generator: true
