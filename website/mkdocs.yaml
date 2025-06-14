@@ -17,7 +17,6 @@ theme:
     code: Roboto Mono
   language: en
   palette:
-      # scheme: default
       primary: custom
       accent: '#8DDBE0'
   logo: assets/favicon.png
@@ -25,7 +24,6 @@ theme:
   features:
     - navigation.instant
     - navigation.tabs
-    # - navigation.tabs.sticky
     - navigation.sections
     - navigation.expand
     - navigation.indexes
