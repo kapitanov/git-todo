@@ -11,3 +11,7 @@ assets:
 	cp $(ROOT_DIR)/assets/demo.gif $(ROOT_DIR)/website/docs/assets/demo.gif
 	cp $(ROOT_DIR)/assets/tui.gif $(ROOT_DIR)/website/docs/assets/tui.gif
 	cp $(ROOT_DIR)/assets/tui.png $(ROOT_DIR)/website/docs/assets/tui.png
+
+ci-build:
+	pip install -r requirements.txt 
+	mkdocs build
