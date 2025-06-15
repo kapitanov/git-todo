@@ -1,16 +1,27 @@
-name: build
+name: ci
 
 on:
   push:
-    branches:
-      - master
+    paths:
+      - '**/*.go'
+      - '**/testdata/*'
+      - '**/*.mod'
+      - '**/*.sum'
+      - '.github/workflows/ci.yaml'
+      - 'Makefile'
   pull_request:
-    branches:
-      - master
+    paths:
+      - '**/*.go'
+      - '**/testdata/*'
+      - '**/*.mod'
+      - '**/*.sum'
+      - '.github/workflows/ci.yaml'
+      - 'Makefile'
 
 jobs:
   build:
     runs-on: ubuntu-latest
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || (git.event_name == 'pull_request' && github.base_ref == 'master')
     steps:
       - name: set up go 1.24
         uses: actions/setup-go@v5

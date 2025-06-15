@@ -1,5 +1,9 @@
 # git-todo
 
+![GitHub branch check runs](https://img.shields.io/github/check-runs/kapitanov/git-todo/master?label=build)
+![GitHub Release](https://img.shields.io/github/v/release/kapitanov/git-todo)
+![GitHub License](https://img.shields.io/github/license/kapitanov/git-todo)
+
 A local-only list of TODO items for your git repositories.
 
 ---

@@ -2,8 +2,6 @@ name: website
 
 on:
   push:
-    branches:
-      - master
     paths:
       - 'website/**'
       - '.github/workflows/website.yaml'
@@ -19,6 +17,7 @@ concurrency:
 
 jobs:
   github-pages:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/master'
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
