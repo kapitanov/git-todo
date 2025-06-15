@@ -19,14 +19,14 @@ jobs:
       - name: set up go
         uses: actions/setup-go@v5
         with:
-          go-version: "1.24"
+          go-version: 1.24
+          cache-dependency-path: go.sum
       - name: go caches
         uses: actions/cache@v4
         with:
           path: |
-            /root/.cache/go-build
-            /root/go/pkg/mod
-            /root/go/bin
+            /home/runner/go/go/pkg/mod
+            /home/runner/go/bin
           key: ${{ runner.os }}-golang-${{ hashFiles('**/go.sum') }}
           restore-keys: |
             ${{ runner.os }}-golang-
