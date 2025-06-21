@@ -65,6 +65,7 @@ Let's get started!
     $ git todo check e885a108
     TODO item [e885a108] "Write some code" has been marked as completed
 
+    # Note that you can use a part of the ID to match the TODO item.
     $ git todo check 22
     TODO item [22daeee9] "Write tests for the code" has been marked as completed
 

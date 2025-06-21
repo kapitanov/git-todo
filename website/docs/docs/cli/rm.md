@@ -21,7 +21,7 @@ git todo check [-q|--quiet] [-v|--verbose] [<id>...]
 
 ```bash
 # Remove a TODO item [e885a108]
-$ git todo e885a108
+$ git todo rm e885a108
 Are you sure you want to remove TODO item [e885a108] "Write some code" (y/n)? y
 TODO item [e885a108] "Write some code" has been removed
 

@@ -9,7 +9,7 @@ import (
 
 func viewCommand(c *commandContext) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "view",
+		Use:   "view <id>...",
 		Short: "view a TODO item",
 		Long: `Print a TODO item from the current Git repository.
 This command displays a selected TODO item in the current Git repository, showing its ID, completion status, and title.

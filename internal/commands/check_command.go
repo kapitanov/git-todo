@@ -8,7 +8,7 @@ import (
 
 func checkCommand(c *commandContext) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "check <index>...",
+		Use:   "check <id>...",
 		Short: "mark a TODO item as completed",
 		Long: `Mark one or more TODO items as completed by their IDs.
 You may find the IDs using the "git todo ls" command.

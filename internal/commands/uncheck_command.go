@@ -8,7 +8,7 @@ import (
 
 func uncheckCommand(c *commandContext) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "uncheck <index>...",
+		Use:   "uncheck <id>...",
 		Short: "mark a TODO item as incomplete",
 		Long: `Mark one or more TODO items as incomplete by their IDs.
 You may find the IDs using the "git-todo ls" command.

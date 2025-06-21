@@ -12,7 +12,7 @@ import (
 
 func removeCommand(c *commandContext) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "rm",
+		Use:   "rm <id>...",
 		Short: "remove a TODO item",
 		Long: `Remove a TODO item by its ID.
 You may find the IDs using the "git todo ls" command.

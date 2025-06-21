@@ -45,7 +45,7 @@ setup_local_env: teardown_local_env
 	@echo "    title: Tests" >> .git/TODO
 	@echo "  - id: 9e9cf322" >> .git/TODO
 	@echo "    title: Documentation" >> .git/TODO
-	@echo "  - id: "13844228"" >> .git/TODO
+	@echo "  - id: '13844228'" >> .git/TODO
 	@echo "    title: CI" >> .git/TODO
 	@echo "  - id: 32fa9037" >> .git/TODO
 	@echo "    title: New TODO Item A" >> .git/TODO

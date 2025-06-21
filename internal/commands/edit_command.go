@@ -12,7 +12,7 @@ import (
 
 func editCommand(c *commandContext) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "edit",
+		Use:   "edit <id>",
 		Short: "edit a TODO item",
 		Long: `Edit a TODO item by its ID.
 You may find the IDs using the "git todo ls" command.

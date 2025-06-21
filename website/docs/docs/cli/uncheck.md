@@ -37,7 +37,7 @@ $ git todo uncheck -v 419ee57f
 10:40PM DBG executing command cmd="/opt/homebrew/bin/git git rev-parse --show-toplevel"
 10:40PM INF discovered git repository root root=/Users/username/git-repository
 10:40PM DBG loaded model file path=/Users/username/git-repository/.git/TODO
-TODO item[419ee57f] "Write some useful documentation as it is important" is not marked as completed
+TODO item [419ee57f] "Write some useful documentation as it is important" is not marked as completed
 ```
 
 ### Scripting usage examples

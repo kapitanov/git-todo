@@ -57,7 +57,7 @@ The command supports three output formats:
     ```json
     [
         {
-            "id"   : <integer>, // The ID of the TODO item
+            "id"   : <string>,  // The ID of the TODO item
             "done" : <boolean>, // Whether the TODO item is completed (true) or incomplete (false)
             "title": <string>   // The title of the TODO item
         }
