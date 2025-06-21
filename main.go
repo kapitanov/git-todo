@@ -23,13 +23,16 @@ func main() {
 		return cmd.ExecuteContext(ctx)
 	})
 	if err != nil {
+		exitCode := int(commands.ExitCodeInternalError)
+
 		var exitErr commands.ExitError
 		if errors.As(err, &exitErr) {
-			os.Exit(int(exitErr.ExitCode))
+			exitCode = int(exitErr.ExitCode)
 		} else {
 			_, _ = fmt.Fprintf(os.Stderr, "%s\n", err)
-			os.Exit(int(commands.ExitCodeInternalError))
 		}
+
+		os.Exit(exitCode)
 	}
 }
 

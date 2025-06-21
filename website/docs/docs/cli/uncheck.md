@@ -23,21 +23,21 @@ If an item is already marked as **incomplete**, no action will be taken.
 ## Examples
 
 ```bash
-# Mark a TODO item 1 as "incomplete"
-$ git todo uncheck 1
-TODO item #1 has been checked as incomplete (Write some code)
+# Mark a TODO item [e885a108] as "incomplete"
+$ git todo uncheck e885a108
+TODO item [e885a108] "Write some code" has been marked as incomplete
 
-# Mark TODO items 1 and 3 as "incomplete"
-$ git todo uncheck 1 3
-TODO item 1 is not marked as completed (Write some code)
-TODO item 3 has been marked as incomplete (Write some useful documentation as it is important)
+# Mark TODO items [e885a108] and [419ee57f] as "incomplete"
+$ git todo uncheck e88 419
+TODO item [e885a108] "Write some code" is not marked as completed
+TODO item [419ee57f] "Write some useful documentation as it is important" has been marked as incomplete
 
-# Mark a TODO item 4 as "incomplete" - with more verbose output.
-$ git todo uncheck -v 4
+# Mark a TODO item [419ee57f] as "incomplete" - with more verbose output.
+$ git todo uncheck -v 419ee57f
 10:40PM DBG executing command cmd="/opt/homebrew/bin/git git rev-parse --show-toplevel"
 10:40PM INF discovered git repository root root=/Users/username/git-repository
 10:40PM DBG loaded model file path=/Users/username/git-repository/.git/TODO
-TODO item 4 is not marked as completed (Build something great!)
+TODO item[419ee57f] "Write some useful documentation as it is important" is not marked as completed
 ```
 
 ### Scripting usage examples
@@ -45,11 +45,11 @@ TODO item 4 is not marked as completed (Build something great!)
 For scripting, you should use `-q` or `--quiet` flag to suppress output and avoid cluttering the console.
 
 ```bash
-# Mark a TODO item 1 as "incomplete"
-$ git todo uncheck -q 1
-1
+# Mark a TODO item [e885a108] as "incomplete"
+$ git todo uncheck -q e885a108
+e885a108
 
-# Mark TODO items 1 and 3 as "incomplete"
-$ git todo uncheck -q 1 3
-3
+# Mark TODO items [e885a108] and [419ee57f] as "incomplete"
+$ git todo uncheck -q e885a108 419ee57f
+419ee57f
 ```

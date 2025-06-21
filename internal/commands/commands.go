@@ -5,8 +5,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"iter"
 	"os"
-	"strconv"
 
 	"github.com/kapitanov/git-todo/internal/git"
 	"github.com/spf13/cobra"
@@ -26,7 +26,7 @@ It allows you to manage a private, working-copy-local TODO list.
 Features:
   - Manage private, per-repository TODO items
   - Use a Text User Interface (TUI) to interact with your TODO items
-  - Convinient git hooks will prevent you from accidentally pushing your changes with uncompleted TODO items
+  - Convenient git hooks will prevent you from accidentally pushing your changes with uncompleted TODO items
     or committing them into the main branch
 
 Quickstart:
@@ -36,16 +36,17 @@ Quickstart:
   4. Work on your tasks - and when you're done, commit your changes as usual.
   5. If you try to push your changes with uncompleted TODO items, git todo will warn you.
 `,
-		Example: `  git-todo                                              - open the Text User Interface (TUI) for git todo
-  git-todo init                                         - initialize git todo hooks for the current repository
-  git-todo add Implement new feature                    - add a TODO item with the description "Implement new feature"
-  git-todo add "Write some documentation"               - add another TODO item
-  git-todo ls                                           - list all TODO items
-  git-todo edit 1 --title "Update task description"     - edit the first TODO item, changing its title
-  git-todo check 1                                      - mark the first TODO item as completed
-  git-todo uncheck 1                                    - mark the first TODO item as not completed
-  git-todo remove 2                                     - remove the second TODO item
-  git-todo clear                                        - remove all TODO items
+		Example: `git-todo                                                   - open the Text User Interface (TUI) for git todo
+  git-todo init                                            - initialize git todo hooks for the current repository
+  git-todo add Implement new feature                       - add a TODO item with the description "Implement new feature"
+  git-todo add "Write some documentation"                  - add another TODO item
+  git-todo ls                                              - list all TODO items
+  git-todo edit 4e3eeecc --title "Update task description" - edit a TODO item, changing its title
+  git-todo check 4e3eeecc                                  - mark a TODO item as completed
+  git-todo uncheck 4e3eeecc                                - mark a TODO item as not completed
+  git-todo view 4e3eeecc                                   - print a TODO item
+  git-todo remove 4e3eeecc                                 - remove a TODO item
+  git-todo clear                                           - remove all TODO items
 `,
 		SilenceUsage:  true,
 		SilenceErrors: true,
@@ -82,6 +83,7 @@ Quickstart:
 	}
 
 	cmd.AddCommand(listCommand(commandCtx))
+	cmd.AddCommand(viewCommand(commandCtx))
 	cmd.AddCommand(addCommand(commandCtx))
 	cmd.AddCommand(editCommand(commandCtx))
 	cmd.AddCommand(checkCommand(commandCtx))
@@ -96,34 +98,33 @@ Quickstart:
 	return cmd
 }
 
-func selectItemsByIndex(app *application.App, args []string) (items []*application.Item, err error) {
-	for _, arg := range args {
-		index, err := strconv.Atoi(arg)
-		if err != nil {
-			return nil, fmt.Errorf("invalid index %q", arg)
-		}
+func selectItemsByID(app *application.App, args []string) iter.Seq2[*application.Item, error] {
+	return func(yield func(*application.Item, error) bool) {
+		for _, arg := range args {
+			item := app.Item(arg)
+			var err error
+			if item == nil {
+				err = ExitError{
+					ExitCode: ExitCodeItemDoesntExist,
+					Message:  fmt.Sprintf("item [%s] doesn't exist", arg),
+				}
+			}
 
-		item := app.Item(index)
-		if item == nil {
-			return nil, ExitError{
-				ExitCode: ExitCodeItemDoesntExist,
-				Message:  fmt.Sprintf("item %d doesn't exist", index),
+			if !yield(item, err) {
+				return
 			}
 		}
-
-		items = append(items, item)
 	}
-	return
 }
 
 type ExitCode int
 
 const (
 	ExitCodeNotGitRepository  ExitCode = 128
-	ExitCodeItemDoesntExist   ExitCode = 404
-	ExitCodeItemAlreadyExists ExitCode = 409
-	ExitCodeOperationCanceled ExitCode = 499
-	ExitCodeInternalError     ExitCode = 500
+	ExitCodeItemDoesntExist   ExitCode = 1
+	ExitCodeItemAlreadyExists ExitCode = 2
+	ExitCodeOperationCanceled ExitCode = 3
+	ExitCodeInternalError     ExitCode = 9
 )
 
 type ExitError struct {
@@ -168,9 +169,16 @@ func (c *commandContext) HandleError(err error) error {
 		return ExitError{ExitCode: ExitCodeNotGitRepository}
 	}
 
-	if errors.Is(err, application.ErrItemAlreadyExists) {
+	var errAlreadyExists application.ItemAlreadyExistsError
+	if errors.As(err, &errAlreadyExists) {
 		_, _ = fmt.Fprintf(os.Stderr, "%s\n", err.Error())
 		return ExitError{ExitCode: ExitCodeItemAlreadyExists}
+	}
+
+	var errExit ExitError
+	if errors.As(err, &errExit) {
+		_, _ = fmt.Fprintf(os.Stderr, "%s\n", errExit.Message)
+		return errExit
 	}
 
 	if errors.Is(err, context.Canceled) {

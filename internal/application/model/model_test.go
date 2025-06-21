@@ -20,33 +20,27 @@ func TestLoad(t *testing.T) {
 	testCases := []TestCase{
 		{
 			Name: "Valid file",
-			Path: "testdata/valid.txt",
+			Path: "testdata/valid.yaml",
 			Expected: &Model{
 				Items: []*Item{
-					{IsCompleted: false, Title: "Item 1"},
-					{IsCompleted: false, Title: "Item 2"},
-					{IsCompleted: true, Title: "Item 3"},
-					{IsCompleted: false, Title: "Item 4"},
-					{IsCompleted: true, Title: "Item 5"},
+					{ID: "a", IsCompleted: false, Title: "Item 1"},
+					{ID: "b", IsCompleted: false, Title: "Item 2"},
+					{ID: "c", IsCompleted: true, Title: "Item 3"},
+					{ID: "d", IsCompleted: false, Title: "Item 4"},
+					{ID: "e", IsCompleted: true, Title: "Item 5"},
 				},
 			},
 		},
 		{
-			Name: "Badly formatted file",
-			Path: "testdata/badly-formatted.txt",
+			Name: "Invalid file",
+			Path: "testdata/invalid.yaml",
 			Expected: &Model{
-				Items: []*Item{
-					{IsCompleted: false, Title: "Item 1"},
-					{IsCompleted: false, Title: "Item 2"},
-					{IsCompleted: true, Title: "Item 3"},
-					{IsCompleted: false, Title: "Item 4"},
-					{IsCompleted: true, Title: "Item 5"},
-				},
+				Items: []*Item{},
 			},
 		},
 		{
 			Name: "Empty file",
-			Path: "testdata/empty.txt",
+			Path: "testdata/empty.yaml",
 			Expected: &Model{
 				Items: []*Item{},
 			},
@@ -86,16 +80,22 @@ func TestStore(t *testing.T) {
 			Name: "Valid model",
 			Model: &Model{
 				Items: []*Item{
-					{IsCompleted: false, Title: "Item 1"},
-					{IsCompleted: true, Title: "Item 2"},
+					{ID: "a", IsCompleted: false, Title: "Item 1"},
+					{ID: "b", IsCompleted: true, Title: "Item 2"},
 				},
 			},
-			Expected: "[ ] Item 1\n[x] Item 2\n",
+			Expected: `items:
+    - id: a
+      title: Item 1
+    - id: b
+      done: true
+      title: Item 2
+`,
 		},
 		{
 			Name:     "Empty model",
 			Model:    &Model{Items: []*Item{}},
-			Expected: "",
+			Expected: "items: []\n",
 		},
 	}
 

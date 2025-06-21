@@ -44,7 +44,7 @@ This action cannot be undone!`,
 			}
 		}
 
-		err = app.Clear()
+		err = app.ClearItems()
 		if err != nil {
 			return c.HandleError(err)
 		}

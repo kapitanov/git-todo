@@ -40,16 +40,16 @@ Let's get started!
 
     ```bash
     $ git todo add "Write some code"
-    Added new TODO item: "Write some code"
+    Added a new TODO item: [e885a108] "Write some code"
 
     $ git todo add "Write tests for the code"
-    Added new TODO item: "Write tests for the code"
+    Added a new TODO item: [22daeee9] "Write tests for the code"
 
     $ git todo add "Update documentation"
-    Added new TODO item: "Update documentation"
+    Added a new TODO item: [6b64213b] "Update documentation"
 
     $ git todo add "Check if everything works"
-    Added new TODO item: "Check if everything works"
+    Added a new TODO item: [895a7c28] "Check if everything works"
     ```
 
 5. Now you may work on your tasks.
@@ -57,19 +57,22 @@ Let's get started!
 
     ```bash
     $ git todo ls
-    1 · Write some code
-    2 · Write tests for the code
-    3 · Update documentation
-    4 · Check if everything works
+    e885a108 · Write some code
+    22daeee9 · Write tests for the code
+    6b64213b · Update documentation
+    895a7c28 · Check if everything works
 
-    $ git todo check 1
-    TODO item #1 has been checked as completed (Write some code)
+    $ git todo check e885a108
+    TODO item [e885a108] "Write some code" has been marked as completed
+
+    $ git todo check 22
+    TODO item [22daeee9] "Write tests for the code" has been marked as completed
 
     $ git todo ls
-    1 ✓ Write some code
-    2 · Write tests for the code
-    3 · Update documentation
-    4 · Check if everything works
+    e885a108 ✓ Write some code
+    22daeee9 ✓ Write tests for the code
+    6b64213b · Update documentation
+    895a7c28 · Check if everything works
     ```
 
 6. Once you have completed all your tasks, you can commit your changes:

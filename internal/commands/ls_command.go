@@ -19,7 +19,7 @@ func listCommand(c *commandContext) *cobra.Command {
 		Use:   "ls",
 		Short: "list TODO items",
 		Long: `List all TODO items in the current Git repository.
-This command displays all TODO items in the current Git repository, showing their index, completion status, and title.
+This command displays all TODO items in the current Git repository, showing their IDs, completion status, and title.
 
 By default, TODO items are displayed in pretty, human-readable format,
 but you can customize the output using various flags, as shown in the examples below.
@@ -146,10 +146,6 @@ func renderPrettyList(items []*application.Item) string {
 		return "No TODO items found.\n"
 	}
 
-	maxIndex := len(items)
-	n := numDecimalPlaces(maxIndex)
-	itemNumberFormat := fmt.Sprintf("%%%dd", n)
-
 	var sb strings.Builder
 	for _, item := range items {
 		checkBox := "·"
@@ -159,11 +155,11 @@ func renderPrettyList(items []*application.Item) string {
 			style = cui.ItemCompletedTextStyle
 		}
 
-		itemNumber := cui.ItemIndexStyle.Render(fmt.Sprintf(itemNumberFormat, item.ID()))
+		itemID := cui.ItemIndexStyle.Render(item.ID())
 		checkBox = cui.ItemCheckboxStyle.Render(checkBox)
 		title := style.Render(item.Title())
 
-		sb.WriteString(fmt.Sprintf("%s %s %s\n", itemNumber, checkBox, title))
+		sb.WriteString(fmt.Sprintf("%s %s %s\n", itemID, checkBox, title))
 	}
 
 	return sb.String()
@@ -181,7 +177,7 @@ func renderPlainList(items []*application.Item) string {
 			checkBox = "DONE"
 		}
 
-		sb.WriteString(fmt.Sprintf("%d %s %s\n", item.ID(), checkBox, item.Title()))
+		sb.WriteString(fmt.Sprintf("%s %s %s\n", item.ID(), checkBox, item.Title()))
 	}
 
 	return sb.String()
@@ -190,9 +186,9 @@ func renderPlainList(items []*application.Item) string {
 func renderJSONList(items []*application.Item) (string, error) {
 	type (
 		Item struct {
-			ID        int    `json:"id"`
-			Completed bool   `json:"completed"`
-			Title     string `json:"title"`
+			ID    string `json:"id"`
+			Done  bool   `json:"done"`
+			Title string `json:"title"`
 		}
 
 		ItemList []Item
@@ -201,9 +197,9 @@ func renderJSONList(items []*application.Item) (string, error) {
 	list := make(ItemList, 0, len(items))
 	for _, item := range items {
 		list = append(list, Item{
-			ID:        item.ID(),
-			Completed: item.IsCompleted(),
-			Title:     item.Title(),
+			ID:    item.ID(),
+			Done:  item.IsCompleted(),
+			Title: item.Title(),
 		})
 	}
 
@@ -224,16 +220,4 @@ func onlyOneAllowed(xs ...bool) bool {
 	}
 
 	return count <= 1
-}
-
-func numDecimalPlaces(num int) int {
-	if num == 0 {
-		return 1
-	}
-	count := 0
-	for num > 0 {
-		num /= 10
-		count++
-	}
-	return count
 }
