@@ -30,7 +30,7 @@ All TODO items have been deleted
 
 # Remove all TODO items without asking for confirmation - with more verbose output.
 $ git todo clear -vf
-1:54PM DBG executing command cmd="/opt/homebrew/bin/git git rev-parse --show-toplevel"
+11:54PM DBG executing command cmd="/opt/homebrew/bin/git git rev-parse --show-toplevel"
 11:54PM INF discovered git repository root root=/Users/username/git-repository
 11:54PM DBG loaded model file path=/Users/username/git-repository/.git/TODO
 All TODO items have been deleted

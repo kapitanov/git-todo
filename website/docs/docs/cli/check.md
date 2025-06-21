@@ -23,21 +23,21 @@ If an item is already marked as **completed**, no action will be taken.
 ## Examples
 
 ```bash
-# Mark a TODO item 1 as "completed"
-$ git todo check 1
-TODO item 1 has been checked as completed (Write some code)
+# Mark a TODO item [e885a108] as "completed"
+$ git todo check e885a108
+TODO item [e885a108] "Write some code" has been marked as completed
 
-# Mark TODO items 1 and 3 as "completed"
-$ git todo check 1 3
-TODO item 1 is already marked as completed (Write some code)
-TODO item 3 has been marked as completed (Write some useful documentation as it is important)
+# Mark TODO items [e885a108] and [419ee57f] as "completed"
+$ git todo check e885a108 419
+TODO item [e885a108] "Write some code" is already marked as completed
+TODO item [419ee57f] "Write some useful documentation as it is important" has been marked as completed
 
-# Mark a TODO item 4 as "completed" - with more verbose output.
-$ git todo check -v 4
+# Mark a TODO item [ae19ad18] as "completed" - with more verbose output.
+$ git todo check -v ae
 10:35PM DBG executing command cmd="/opt/homebrew/bin/git git rev-parse --show-toplevel"
 10:35PM INF discovered git repository root root=/Users/username/git-repository
 10:35PM DBG loaded model file path=/Users/username/git-repository/.git/TODO
-TODO item 4 has been marked as completed (Build something great!)
+TODO item [ae19ad18] "Build something great" has been marked as completed
 ```
 
 ### Scripting usage examples
@@ -45,11 +45,11 @@ TODO item 4 has been marked as completed (Build something great!)
 For scripting, you should use `-q` or `--quiet` flag to suppress output and avoid cluttering the console.
 
 ```bash
-# Mark a TODO item 1 as "completed"
-$ git todo check -q 1
-1
+# Mark a TODO item [e885a108] as "completed"
+$ git todo check -q e885a108
+e885a108
 
-# Mark TODO items 1 and 3 as "completed"
-$ git todo check -q 1 3
-3
+# Mark TODO items [e885a108] and [419ee57f] as "completed"
+$ git todo check -q e885a108 419ee57f
+419ee57f
 ```

@@ -8,14 +8,14 @@ import (
 
 func uncheckCommand(c *commandContext) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "uncheck <index>...",
+		Use:   "uncheck <id>...",
 		Short: "mark a TODO item as incomplete",
-		Long: `Mark one or more TODO items as incomplete by their index in the list.
-You may find the indices using the "git-todo ls" command.
+		Long: `Mark one or more TODO items as incomplete by their IDs.
+You may find the IDs using the "git-todo ls" command.
 
 If an item is already marked as incomplete, this command won't do anything.`,
-		Example: `  git-todo check 5     - marks TODO item with index 5 as incomplete
-  git-todo check 1 3 5 - marks TODO items with indices 1, 3, and 5 as incomplete`,
+		Example: `  git-todo check 4e3eeecc                   - marks TODO item with index [4e3eeecc] as incomplete
+  git-todo check 4e3eeecc 9612977c ae19ad18 - marks TODO items with indices [4e3eeecc], [9612977c], and [ae19ad18] as incomplete`,
 		Args: cobra.MinimumNArgs(1),
 	}
 
@@ -25,14 +25,13 @@ If an item is already marked as incomplete, this command won't do anything.`,
 			return c.HandleError(err)
 		}
 
-		items, err := selectItemsByIndex(app, args)
-		if err != nil {
-			return c.HandleError(err)
-		}
+		for item, err := range selectItemsByID(app, args) {
+			if err != nil {
+				return c.HandleError(err)
+			}
 
-		for _, item := range items {
 			if !item.IsCompleted() {
-				c.HumanReadablePrintf("TODO item %d is not marked as completed (%s)\n", item.ID(), item.Title())
+				c.HumanReadablePrintf("TODO item [%s] %q is not marked as completed\n", item.ID(), item.Title())
 				continue
 			}
 
@@ -41,8 +40,8 @@ If an item is already marked as incomplete, this command won't do anything.`,
 				return c.HandleError(err)
 			}
 
-			c.HumanReadablePrintf("TODO item %d has been marked as incomplete (%s)\n", item.ID(), item.Title())
-			c.MachineReadablePrintf("%d\n", item.ID())
+			c.HumanReadablePrintf("TODO item [%s] %q has been marked as incomplete\n", item.ID(), item.Title())
+			c.MachineReadablePrintf("%s\n", item.ID())
 		}
 		return nil
 	}

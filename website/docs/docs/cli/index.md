@@ -40,6 +40,7 @@ Here's a quick reference for the available commands:
 | [`git todo ls`](ls.md)           | List all TODO items.                       |
 | [`git todo rm`](rm.md)           | Remove a TODO item.                        |
 | [`git todo uncheck`](uncheck.md) | Mark a TODO item as "incomplete".          |
+| [`git todo view`](view.md)       | View a TODO item.                          |
 
 ## Using `git-todo` in scripts
 
@@ -73,10 +74,10 @@ Regardless of the `--quiet` flag, all `git-todo` commands use this exit codes:
 | --------: | -------------------------------------------------------------------------------------------- |
 |       `0` | The TODO item was successfully added.                                                        |
 |     `128` | Current directory is not a git repository.                                                   |
-|     `404` | An attempt was made to edit or remove a non-existing item                                    |
-|     `409` | A TODO item with the same title already exists (and no `-u`/`--unless-exists` flag was set). |
-|     `499` | An operation has been canceled (via `SIGINT` signal).                                        |
-|     `500` | An error occurred while adding the TODO item.                                                |
+|       `1` | An attempt was made to edit or remove a non-existing item                                    |
+|       `2` | A TODO item with the same title already exists (and no `-u`/`--unless-exists` flag was set). |
+|       `3` | An operation has been canceled (via `SIGINT` signal).                                        |
+|       `9` | An error occurred while adding the TODO item.                                                |
 
 ## `EDITOR` support
 
@@ -95,3 +96,21 @@ By default, if the `EDITOR` variable is not set, `git-todo` will try to use a de
 - `nano` on macOS;
 - `vi` on Linux;
 - `notepad` on Windows.
+
+## Item IDs and selectors
+
+Each TODO item has a unique ID that can be used to reference it in commands.
+You can use the ID to perform operations like editing or removing a specific TODO item, e.g.:
+
+```bash
+git todo view e885a108
+```
+
+Besides, you can use a short version of the ID - just type the first few characters of the ID.
+If the short ID is unique, it will be resolved to the full ID automatically.
+But if there are multiple items with the same short ID,
+you will get an "item not found" error.
+
+```bash
+git todo view e88
+```

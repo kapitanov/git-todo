@@ -6,24 +6,29 @@ import (
 	"slices"
 	"strings"
 
-	"golang.org/x/exp/utf8string"
-
 	"github.com/kapitanov/git-todo/internal/application/discover"
+	"github.com/kapitanov/git-todo/internal/application/idgen"
 	"github.com/kapitanov/git-todo/internal/application/model"
+	"golang.org/x/exp/utf8string"
 )
 
 const (
 	MaxTitleLength = 256
 )
 
-var (
-	ErrItemAlreadyExists = errors.New("item already exists")
-)
+type ItemAlreadyExistsError struct {
+	Item *Item
+}
+
+func (e ItemAlreadyExistsError) Error() string {
+	return fmt.Sprintf("item %q already exists", e.Item.Title())
+}
 
 type App struct {
-	model          *model.Model
 	repositoryRoot string
 	dataFilePath   string
+	items          []*Item
+	byID           map[string]*Item
 }
 
 func New() (*App, error) {
@@ -37,35 +42,45 @@ func New() (*App, error) {
 		return nil, err
 	}
 
-	return &App{model: m, repositoryRoot: repositoryRoot, dataFilePath: dataFilePath}, nil
+	app := &App{
+		repositoryRoot: repositoryRoot,
+		dataFilePath:   dataFilePath,
+		items:          make([]*Item, 0, len(m.Items)),
+		byID:           make(map[string]*Item, len(m.Items)),
+	}
+
+	for _, item := range m.Items {
+		i := newItem(item, app)
+		app.items = append(app.items, i)
+		app.byID[item.ID] = i
+	}
+
+	return app, nil
 }
 
 func (app *App) RepositoryRoot() string { return app.repositoryRoot }
 func (app *App) Path() string           { return app.dataFilePath }
 
-func (app *App) Item(i int) *Item {
-	if i < 1 || i > len(app.model.Items) {
-		return nil
+func (app *App) Item(id string) *Item {
+	item, exists := app.byID[id]
+	if exists {
+		return item
 	}
 
-	return &Item{
-		id:    i,
-		model: app.model.Items[i-1],
-		app:   app,
-	}
-}
-
-func (app *App) Items() []*Item {
-	items := make([]*Item, len(app.model.Items))
-	for i, item := range app.model.Items {
-		items[i] = &Item{
-			id:    i + 1,
-			model: item,
-			app:   app,
+	for _, i := range app.items {
+		if strings.HasPrefix(i.ID(), id) {
+			if item != nil {
+				// This partial ID matches to more than one item.
+				return nil
+			}
+			item = i
 		}
 	}
-	return items
+
+	return item
 }
+
+func (app *App) Items() []*Item { return app.items }
 
 func (app *App) IncompleteItems() []*Item {
 	var incompleteItems []*Item
@@ -83,74 +98,97 @@ func (app *App) NewItem(title string) (*Item, error) {
 		return nil, err
 	}
 
-	for _, item := range app.model.Items {
-		if item.Title == title {
-			return nil, fmt.Errorf("unable to create an item with title %q: %w", title, ErrItemAlreadyExists)
+	for _, item := range app.items {
+		if item.Title() == title {
+			return nil, ItemAlreadyExistsError{Item: item}
 		}
 	}
 
-	item := &model.Item{
-		Title:       title,
-		IsCompleted: false,
+	var id string
+	for id = range idgen.Generate(title) {
+		if _, exists := app.byID[id]; !exists {
+			break
+		}
 	}
-	app.model.Items = append(app.model.Items, item)
+
+	item := newItem(&model.Item{ID: id, Title: title, IsCompleted: false}, app)
+	app.items = append(app.items, item)
+	app.byID[id] = item
 	err = app.save()
 	if err != nil {
 		return nil, err
 	}
 
-	items := app.Items()
-	return items[len(items)-1], nil
+	return item, nil
 }
 
-func (app *App) FindItem(title string) (*Item, error) {
+func (app *App) FindItem(title string) *Item {
 	for _, item := range app.Items() {
 		if item.Title() == title {
-			return item, nil
+			return item
 		}
 	}
 
-	return nil, fmt.Errorf("item %q not found", title)
+	return nil
 }
 
-func (app *App) Clear() error {
-	app.model.Items = app.model.Items[:0]
+func (app *App) ClearItems() error {
+	app.items = make([]*Item, 0)
+	app.byID = make(map[string]*Item)
 	return app.save()
 }
 
 func (app *App) save() error {
-	return app.model.Store(app.dataFilePath)
+	m := &model.Model{
+		Items: make([]*model.Item, 0, len(app.items)),
+	}
+	for _, item := range app.items {
+		m.Items = append(m.Items, item.item)
+	}
+
+	return m.Store(app.dataFilePath)
 }
 
 func (app *App) delete(item *Item) error {
-	app.model.Items = slices.DeleteFunc(app.model.Items, func(i *model.Item) bool { return i == item.model })
+	delete(app.byID, item.ID())
+	app.items = slices.DeleteFunc(app.items, func(i *Item) bool { return i == item })
+
 	return app.save()
 }
 
 type Item struct {
-	id    int
-	model *model.Item
-	app   *App
+	item *model.Item
+	app  *App
 }
 
-func (item *Item) ID() int           { return item.id }
-func (item *Item) Title() string     { return item.model.Title }
-func (item *Item) IsCompleted() bool { return item.model.IsCompleted }
+func newItem(item *model.Item, app *App) *Item {
+	return &Item{
+		item: item,
+		app:  app,
+	}
+}
+
+func (item *Item) ID() string        { return item.item.ID }
+func (item *Item) Title() string     { return item.item.Title }
+func (item *Item) IsCompleted() bool { return item.item.IsCompleted }
 
 func (item *Item) SetTitle(val string) error {
 	val, err := validateTitle(val)
 	if err != nil {
 		return err
 	}
-	// TODO check for conficts
-	// fmt.Errorf("item with title %s already exists: %w", title, ErrItemAlreadyExists)
 
-	item.model.Title = val
+	existingItem := item.app.FindItem(val)
+	if existingItem != nil && existingItem.ID() != item.ID() {
+		return ItemAlreadyExistsError{Item: existingItem}
+	}
+
+	item.item.Title = val
 	return item.app.save()
 }
 
 func (item *Item) SetIsCompleted(val bool) error {
-	item.model.IsCompleted = val
+	item.item.IsCompleted = val
 	return item.app.save()
 }
 

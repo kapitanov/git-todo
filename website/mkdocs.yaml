@@ -125,6 +125,7 @@ nav:
          - docs/cli/ls.md
          - docs/cli/rm.md
          - docs/cli/uncheck.md
+         - docs/cli/view.md
        - Git Hooks: docs/git-hooks.md
        - Interaction with IDEs: docs/ide.md
        - Storage format: ./docs/storage.md

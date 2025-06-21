@@ -12,19 +12,19 @@ import (
 
 func removeCommand(c *commandContext) *cobra.Command {
 	cmd := &cobra.Command{
-		Use:   "rm",
+		Use:   "rm <id>...",
 		Short: "remove a TODO item",
-		Long: `Remove a TODO item by its index in the list.
-You may find the indices using the "git todo ls" command.
+		Long: `Remove a TODO item by its ID.
+You may find the IDs using the "git todo ls" command.
 
 This action cannot be undone!
 
 This command requires a confirmation before removing the item.
 If you want to skip the confirmation, use the --force flag.
 `,
-		Example: `  git todo rm 5        - removes TODO item with index 5
-  git todo rm 1 3 5    - removes TODO items with indices 1, 3, and 5
-  git todo rm --force5 - removes TODO items with index 5 without confirmation`,
+		Example: `  git todo rm 4e3eeecc                   - removes TODO item with index [4e3eeecc]
+  git todo rm 4e3eeecc 9612977c ae19ad18 - removes TODO items [4e3eeecc], [9612977c], and [ae19ad18]
+  git todo rm --force 4e3eeecc           - removes TODO items [4e3eeecc] without confirmation`,
 		Args: cobra.MinimumNArgs(1),
 	}
 
@@ -41,19 +41,18 @@ If you want to skip the confirmation, use the --force flag.
 			return c.HandleError(err)
 		}
 
-		items, err := selectItemsByIndex(app, args)
-		if err != nil {
-			return c.HandleError(err)
-		}
+		for item, err := range selectItemsByID(app, args) {
+			if err != nil {
+				return c.HandleError(err)
+			}
 
-		for _, item := range items {
 			if !force {
-				confirmed, err := cui.Confirm(fmt.Sprintf("Are you sure you want to remove TODO item #%d %q", item.ID(), item.Title()))
+				confirmed, err := cui.Confirm(fmt.Sprintf("Are you sure you want to remove TODO item [%s] %q", item.ID(), item.Title()))
 				if err != nil {
 					return c.HandleError(err)
 				}
 				if !confirmed {
-					c.HumanReadablePrintf("Canceled removal of TODO item %d %q\n", item.ID(), item.Title())
+					c.HumanReadablePrintf("Canceled removal of TODO item [%s] %q\n", item.ID(), item.Title())
 					continue
 				}
 			}
@@ -63,8 +62,8 @@ If you want to skip the confirmation, use the --force flag.
 				return c.HandleError(err)
 			}
 
-			c.HumanReadablePrintf("TODO item %d has been removed (%s)\n", item.ID(), item.Title())
-			c.MachineReadablePrintf("%d\n", item.ID())
+			c.HumanReadablePrintf("TODO item [%s] %q has been removed\n", item.ID(), item.Title())
+			c.MachineReadablePrintf("%s\n", item.ID())
 		}
 		return nil
 	}

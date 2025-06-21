@@ -59,23 +59,20 @@ You can override this by setting the EDITOR environment variable before running 
 		newItemAdded := true
 		item, err := app.NewItem(title)
 		if err != nil {
-			if skipExisting && errors.Is(err, application.ErrItemAlreadyExists) {
-				item, err = app.FindItem(title)
-				if err != nil {
-					return c.HandleError(err)
-				}
-
+			var errAlreadyExists application.ItemAlreadyExistsError
+			if skipExisting && errors.As(err, &errAlreadyExists) {
+				item = errAlreadyExists.Item
 				newItemAdded = false
 			} else {
 				return c.HandleError(err)
 			}
 		}
 
-		c.MachineReadablePrintf("%d\n", item.ID())
+		c.MachineReadablePrintf("%s\n", item.ID())
 		if newItemAdded {
-			c.HumanReadablePrintf("Added a new TODO item: %d %q\n", item.ID(), item.Title())
+			c.HumanReadablePrintf("Added a new TODO item: [%s] %q\n", item.ID(), item.Title())
 		} else {
-			c.HumanReadablePrintf("The TODO item already exists: %d %q\n", item.ID(), item.Title())
+			c.HumanReadablePrintf("The TODO item already exists: [%s] %q\n", item.ID(), item.Title())
 		}
 		return nil
 	}

@@ -36,8 +36,8 @@ Imagine you are to work on a certain (quite complicated) feature in your git rep
 1. First, plan your work and create a list of TODO items - **git-todo** will track them for you.
 2. Second, work on your feature, and **git-todo** will remind you about unresolved TODO items before you commit or push your changes.
 3. Once you are done with your feature, you can remove the TODO items from the list - and **git-todo** will not bother you anymore.
-   
-   *Der Mohr hat seine Arbeit getan, der Mohr kann gehen*, as they say.
+
+   _Der Mohr hat seine Arbeit getan, der Mohr kann gehen_, as they say.
 
 ## Installation
 
@@ -122,36 +122,53 @@ git todo # open a TUI
 > TODO: this section will be updated later with more details.
 
 ```bash
-git todo                                    # open a TUI
-git todo init                               # install git hooks
-git todo deinit                             # uninstall git hooks
-git todo ls                                 # list all TODOs
-git todo add "TODO Item"                    # add a new TODO item
-git todo add                                # add a new TODO item - opens an editor
-git todo check 1                            # check the TODO item with index 1
-git todo uncheck 2                          # uncheck the TODO item with index 2
-git todo edit 3 --title "Updated TODO Item" # edit the TODO item with index 3
-git todo edit 3                             # edit the TODO item with index 3 - opens an editor
-git todo rm 4                               # remove the TODO item with index 4
-git todo clear                              # clear all TODO items
+git todo                                           # open a TUI
+git todo init                                      # install git hooks
+git todo deinit                                    # uninstall git hooks
+git todo ls                                        # list all TODOs
+git todo add "TODO Item"                           # add a new TODO item
+git todo add                                       # add a new TODO item - opens an editor
+git todo check 4e3eeecc                            # check the TODO item with ID = 4e3eeecc
+git todo uncheck 419ee57f                          # uncheck the TODO item with ID = 419ee57f
+git todo edit 9612977c --title "Updated TODO Item" # edit the TODO item with ID = 9612977c
+git todo edit 9612977c                             # edit the TODO item with ID = 9612977c - opens an editor
+git todo rm e885a108                               # remove the TODO item with ID = e885a108
+git todo clear                                     # clear all TODO items
 ```
 
 ## Storage format
 
-All TODO items are stored locally in `.git/TODO` file in the Markdown-like text format:
+All TODO items are stored locally in `.git/TODO` file in the YAML format:
 
 ```bash
 $ cat .git/TODO
-[x] Basic CLI
-[x] Refactor
-[x] Automatable CLI (json output, tab-separated output and other stuff)
-[x] TUI
-[x] Git hooks
-[ ] README
-[x] Tests
-[ ] Documentation
-[ ] CI
-[ ] New TODO Item A
+items:
+    - id: 478e1212
+      done: true
+      title: Basic CLI
+    - id: fa1e7a89
+      done: true
+      title: Refactor
+    - id: 66f3902f
+      done: true
+      title: Automatable CLI (json output, tab-separated output and other stuff)
+    - id: 57ed61f0
+      done: true
+      title: TUI
+    - id: f9eb2530
+      done: true
+      title: Git hooks
+    - id: 69e27356
+      title: README
+    - id: 39fdec11
+      done: true
+      title: Tests
+    - id: 9e9cf322
+      title: Documentation
+    - id: "13844228"
+      title: CI
+    - id: 32fa9037
+      title: New TODO Item A
 ```
 
 ## Git hooks

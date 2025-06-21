@@ -3,19 +3,19 @@ package model
 import (
 	"fmt"
 	"os"
-	"regexp"
-	"strings"
 
 	"github.com/rs/zerolog/log"
+	"gopkg.in/yaml.v3"
 )
 
 type Model struct {
-	Items []*Item
+	Items []*Item `yaml:"items"`
 }
 
 type Item struct {
-	IsCompleted bool
-	Title       string
+	ID          string `yaml:"id"`
+	IsCompleted bool   `yaml:"done,omitempty"`
+	Title       string `yaml:"title"`
 }
 
 func newEmptyModel() *Model {
@@ -39,38 +39,17 @@ func Load(path string) (*Model, error) {
 	m, err := parse(bs)
 	if err != nil {
 		log.Error().Err(err).Str("path", path).Msg("failed to parse model file")
-		return nil, fmt.Errorf("failed to parse file %q: %w", path, err)
+		return newEmptyModel(), nil
 	}
 
 	log.Debug().Err(err).Str("path", path).Msg("loaded model file")
 	return m, nil
 }
 
-var (
-	lineRegex = regexp.MustCompile(`^\s*(\[(.)\])\s*(.*)$`)
-)
-
 func parse(bs []byte) (*Model, error) {
 	model := newEmptyModel()
-
-	for line := range strings.Lines(string(bs)) {
-		line = strings.TrimSpace(line)
-		m := lineRegex.FindStringSubmatch(line)
-		if len(m) == 0 {
-			continue
-		}
-
-		isCompleted := m[2] != " " && m[2] != "_"
-		title := strings.TrimSpace(m[3])
-
-		item := &Item{
-			IsCompleted: isCompleted,
-			Title:       title,
-		}
-		model.Items = append(model.Items, item)
-	}
-
-	return model, nil
+	err := yaml.Unmarshal(bs, model)
+	return model, err
 }
 
 func (m *Model) Store(path string) error {
@@ -81,25 +60,11 @@ func (m *Model) Store(path string) error {
 
 	defer func() { _ = f.Close() }()
 
-	str := m.stringify()
-	_, err = f.Write([]byte(str))
-	return err
-}
-
-func (m *Model) stringify() string {
-	var sb strings.Builder
-
-	for _, item := range m.Items {
-		if item.IsCompleted {
-			sb.WriteString("[x] ")
-		} else {
-			sb.WriteString("[ ] ")
-		}
-
-		sb.WriteString(item.Title)
-		sb.WriteString("\n")
+	bs, err := yaml.Marshal(m)
+	if err != nil {
+		return fmt.Errorf("failed to marshal model: %w", err)
 	}
 
-	str := sb.String()
-	return str
+	_, err = f.Write(bs)
+	return err
 }

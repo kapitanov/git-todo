@@ -24,35 +24,34 @@ See [Examples](#examples) below for more details.
 ## Examples
 
 ```bash
-# Rename an existing TODO item with the ID 1 to "Write some code"
-$ git todo edit -t "Write some code" 1
-TODO item 1 has been renamed:
+# Rename an existing TODO item with the ID [e885a108] to "Write some code"
+$ git todo edit -t "Write some code" e885a108
+TODO item [e885a108] has been renamed:
   old: "Write some cde"
   new: "Write some code"
 
-# Rename an existing TODO item with the ID 1 to "Write some code" again - no changes will be made
+# Rename an existing TODO item with the ID [e885a108] to "Write some code" again - no changes will be made
 # However, the command will exit with a zero exit code
-$ git todo edit -t "Write some code" 1
-TODO item 1 has not been renamed: the new title is the same as the old one
+$ git todo edit -t "Write some code" e885a108
+TODO item [e885a108] has not been renamed: the new title is the same as the old one
 
 # Open an interactive editor to type the new title of the TODO item.
 # If you type any non-empty title and save the file, an ordinary rename will be carried out.
 # If you don't provide -t/--title flag, this is the default behavior.
-$ git todo edit 1
-TODO item 1 has been renamed:
+$ git todo edit e885a108
+TODO item [e885a108] has been renamed:
   old: "Write some code"
   new: "Write some code!"
 
 # Rename an existing TODO item with the ID 1 to "Write some code" - with more verbose output
-$ git todo edit -v -t "Write some code" 1
+$ git todo edit -v -t "Write some code" e885a108
 12:21AM DBG executing command cmd="/opt/homebrew/bin/git git rev-parse --show-toplevel"
 12:21AM INF discovered git repository root root=/Users/username/git-repository
 12:21AM DBG loaded model file path=/Users/username/git-repository/.git/TODO
-TODO item 1 has been renamed:
+TODO item [e885a108] has been renamed:
   old: "Write some code!"
   new: "Write some code"
 ```
-
 
 ### Scripting usage examples
 
@@ -62,11 +61,11 @@ as the interactive prompt won't be available.
 
 ```bash
 # Rename an existing TODO item with the ID 1 to "Write some code" - in a script
-$ git todo edit -q -t "Write some code" 1
+$ git todo edit -q -t "Write some code" e885a108
 1
 
 # Rename an existing TODO item with the ID 1 to "Write some code" again - no changes will be made
 # However, the command will exit with a zero exit code
-$ git todo edit -q -t "Write some code" 1
-1
+$ git todo edit -q -t "Write some code" e885a108
+e885a108
 ```
