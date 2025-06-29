@@ -21,7 +21,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || (github.event_name == 'pull_request' && github.base_ref == 'master')
+    if: (github.event_name == 'push' && github.ref == 'refs/heads/master') || github.event_name == 'pull_request'
     steps:
       - name: set up go 1.24
         uses: actions/setup-go@v5
