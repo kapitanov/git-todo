@@ -60,6 +60,7 @@ func formatListItem(item *application.Item, isSelected bool) string {
 		marker = " [ ] "
 	}
 
+	id := fmt.Sprintf("%s ", item.ID())
 	text = strings.TrimSpace(item.Title())
 
 	var selectorStyle, markerStyle, textStyle lipgloss.Style
@@ -86,5 +87,13 @@ func formatListItem(item *application.Item, isSelected bool) string {
 		}
 	}
 
-	return lipgloss.JoinHorizontal(lipgloss.Top, selectorStyle.Render(selector), markerStyle.Render(marker), textStyle.Render(text))
+	idStyle := textStyle.Faint(true)
+	
+	return lipgloss.JoinHorizontal(
+		lipgloss.Top,
+		selectorStyle.Render(selector),
+		markerStyle.Render(marker),
+		idStyle.Render(id),
+		textStyle.Render(text),
+	)
 }

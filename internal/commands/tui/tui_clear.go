@@ -47,7 +47,7 @@ func (m *clearModel) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 		m.err.Error = nil
 		switch keypress := msg.String(); keypress {
 		case "y":
-			err := m.app.Clear()
+			err := m.app.ClearItems()
 			if err == nil {
 				return nil, nil
 			}

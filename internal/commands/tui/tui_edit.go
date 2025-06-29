@@ -2,6 +2,7 @@ package tui
 
 import (
 	"errors"
+	"fmt"
 
 	"github.com/charmbracelet/bubbles/textinput"
 	tea "github.com/charmbracelet/bubbletea"
@@ -22,7 +23,7 @@ type editModel struct {
 func newEditModel(item *application.Item) *editModel {
 	m := &editModel{
 		input: textinput.New(),
-		title: newTitleBar("Edit the title for an existing TODO item"),
+		title: newTitleBar(fmt.Sprintf("Edit the title for an existing TODO item [%s]", item.ID())),
 		err:   newErrorBar(),
 		footer: newFooterBar(
 			footerBarItem{Key: "enter", Label: "save"},

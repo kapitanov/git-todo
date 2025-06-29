@@ -39,10 +39,11 @@ The command supports three output formats:
 
     ```bash
     $ git todo ls
-    1 ✓ Write some code
-    2 ✓ Write some tests as well
-    3 · Write some useful documentation as it is important
-    4 · Build something great!
+    e885a108 ✓ Write some code
+    4e3eeecc · Write some tests as well
+    419ee57f ✓ Write some useful documentation as it is important
+    ae19ad18 ✓ Build something great
+    9612977c · And help people!
     ```
 
 - **JSON**: A structured JSON format, suitable for parsing in scripts:
@@ -51,24 +52,29 @@ The command supports three output formats:
     $ git todo ls --json
     [
         {
-            "id": 1,
-            "completed": true,
+            "id": "e885a108",
+            "done": true,
             "title": "Write some code"
         },
         {
-            "id": 2,
-            "completed": true,
+            "id": "4e3eeecc",
+            "done": false,
             "title": "Write some tests as well"
         },
         {
-            "id": 3,
-            "completed": false,
+            "id": "419ee57f",
+            "done": true,
             "title": "Write some useful documentation as it is important"
         },
         {
-            "id": 4,
-            "completed": false,
-            "title": "Build something great!"
+            "id": "ae19ad18",
+            "done": true,
+            "title": "Build something great"
+        },
+        {
+            "id": "9612977c",
+            "done": false,
+            "title": "And help people!"
         }
     ]
     ```
@@ -78,9 +84,9 @@ The command supports three output formats:
     ```json
     [
         {
-            "id":        <integer>, // The ID of the TODO item
-            "completed": <boolean>, // Whether the TODO item is completed (true) or incomplete (false)
-            "title":     <string>   // The title of the TODO item
+            "id"   : <integer>, // The ID of the TODO item
+            "done" : <boolean>, // Whether the TODO item is completed (true) or incomplete (false)
+            "title": <string>   // The title of the TODO item
         }
     ]
     ```
@@ -89,10 +95,11 @@ The command supports three output formats:
 
     ```bash
     $ git todo ls -p
-    1 DONE Write some code
-    2 DONE Write some tests as well
-    3 TODO Write some useful documentation as it is important
-    4 TODO Build something great!
+    e885a108 DONE Write some code
+    4e3eeecc TODO Write some tests as well
+    419ee57f DONE Write some useful documentation as it is important
+    ae19ad18 DONE Build something great
+    9612977c TODO And help people!
     ```
 
 By default, the command will print the TODO items in a human-readable format.
@@ -103,19 +110,22 @@ But if the `-q` or `--quiet` flag is provided, it will force the plain-text form
 ```bash
 # List all TODO items in the default format
 $ git todo ls
-1 ✓ Write some code
-2 ✓ Write some tests as well
-3 · Write some useful documentation as it is important
-4 · Build something great!
+e885a108 ✓ Write some code
+4e3eeecc · Write some tests as well
+419ee57f ✓ Write some useful documentation as it is important
+ae19ad18 ✓ Build something great
+9612977c · And help people!
 
 # List only completed TODO items
 $ git todo ls -c
-1 ✓ Write some code
-2 ✓ Write some tests as well
+e885a108 ✓ Write some code
+419ee57f ✓ Write some useful documentation as it is important
+ae19ad18 ✓ Build something great
 
 # List only incomplete TODO items
-3 · Write some useful documentation as it is important
-4 · Build something great!
+$ git todo ls -i
+4e3eeecc · Write some tests as well
+9612977c · And help people!
 ```
 
 ### Scripting usage examples
